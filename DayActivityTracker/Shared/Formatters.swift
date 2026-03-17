@@ -59,3 +59,13 @@ enum DurationFormatting {
         return "\(minutes)m"
     }
 }
+
+enum PercentageFormatting {
+    static func wholePercent(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .percent
+        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: value)) ?? "0%"
+    }
+}
