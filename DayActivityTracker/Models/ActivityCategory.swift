@@ -44,4 +44,27 @@ enum ActivityCategory: String, CaseIterable, Codable, Hashable, Identifiable {
             false
         }
     }
+
+    var symbolName: String {
+        switch self {
+        case .activeLearn:
+            "book.closed.fill"
+        case .passiveLearn:
+            "headphones"
+        case .media:
+            "play.rectangle.fill"
+        case .commuteTravel:
+            "tram.fill"
+        case .social:
+            "person.2.fill"
+        case .work:
+            "briefcase.fill"
+        case .exercise:
+            "figure.run"
+        case .sleep:
+            "bed.double.fill"
+        case .personal:
+            "heart.fill"
+        }
+    }
 }

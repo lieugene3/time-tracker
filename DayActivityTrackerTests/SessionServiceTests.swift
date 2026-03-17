@@ -141,6 +141,53 @@ final class SessionServiceTests: XCTestCase {
         }
     }
 
+    func testSubActivitiesAreReusedCaseInsensitivelyAfterTrimming() throws {
+        _ = try service.startSession(
+            category: .activeLearn,
+            subActivityName: "  SwiftUI  ",
+            in: context
+        )
+        dateProvider.now = Self.makeDate(hour: 9, minute: 30)
+        _ = try service.stopCurrentSession(in: context)
+        dateProvider.now = Self.makeDate(hour: 10, minute: 0)
+
+        let session = try service.startSession(
+            category: .activeLearn,
+            subActivityName: "swiftui",
+            in: context
+        )
+
+        let savedSubActivities = try fetchSavedSubActivities()
+        XCTAssertEqual(savedSubActivities.count, 1)
+        XCTAssertEqual(savedSubActivities.first?.name, "SwiftUI")
+        XCTAssertEqual(savedSubActivities.first?.lastUsedAt, dateProvider.now)
+        XCTAssertEqual(session.subActivityName, "SwiftUI")
+    }
+
+    func testSubActivitiesRemainScopedToTheirParentCategory() throws {
+        _ = try service.startSession(
+            category: .activeLearn,
+            subActivityName: "Reading",
+            in: context
+        )
+        dateProvider.now = Self.makeDate(hour: 9, minute: 20)
+        _ = try service.stopCurrentSession(in: context)
+        dateProvider.now = Self.makeDate(hour: 10, minute: 0)
+
+        _ = try service.startSession(
+            category: .passiveLearn,
+            subActivityName: "Reading",
+            in: context
+        )
+
+        let savedSubActivities = try fetchSavedSubActivities()
+        XCTAssertEqual(savedSubActivities.count, 2)
+        XCTAssertEqual(
+            Set(savedSubActivities.map(\.parentCategory)),
+            Set([.activeLearn, .passiveLearn])
+        )
+    }
+
     private func fetchSessions() throws -> [ActivitySession] {
         try context.fetch(FetchDescriptor<ActivitySession>(sortBy: [SortDescriptor(\.startAt, order: .forward)]))
     }
