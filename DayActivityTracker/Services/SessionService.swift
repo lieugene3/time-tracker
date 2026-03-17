@@ -80,6 +80,159 @@ struct HistoryTimelineBuilder {
     }
 }
 
+enum ReportRangeSelection: Equatable {
+    case today
+    case week
+    case month
+    case custom(start: Date, end: Date)
+}
+
+struct ReportTimeRange {
+    let start: Date
+    let end: Date
+    let dayCount: Int
+}
+
+struct ReportCategorySummary: Identifiable {
+    let category: ActivityCategory
+    let totalDuration: TimeInterval
+    let averagePerDay: TimeInterval
+    let percentage: Double
+
+    var id: ActivityCategory { category }
+}
+
+struct ReportSnapshot {
+    let range: ReportTimeRange
+    let totalTrackedDuration: TimeInterval
+    let summaries: [ReportCategorySummary]
+}
+
+enum ReportServiceError: LocalizedError, Equatable {
+    case invalidCustomRange
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidCustomRange:
+            "Start must be earlier than or equal to the selected end."
+        }
+    }
+}
+
+@MainActor
+final class ReportService {
+    private let dateProvider: any DateProvider
+    private let calendar: Calendar
+
+    init(
+        dateProvider: any DateProvider = SystemDateProvider(),
+        calendar: Calendar = .dayActivityTracker
+    ) {
+        self.dateProvider = dateProvider
+        self.calendar = calendar
+    }
+
+    func resolveRange(for selection: ReportRangeSelection) throws -> ReportTimeRange {
+        let now = dateProvider.now
+
+        let start: Date
+        let end: Date
+
+        switch selection {
+        case .today:
+            start = calendar.startOfDay(for: now)
+            end = now
+        case .week:
+            start = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? calendar.startOfDay(for: now)
+            end = now
+        case .month:
+            start = calendar.dateInterval(of: .month, for: now)?.start ?? calendar.startOfDay(for: now)
+            end = now
+        case let .custom(rawStart, rawEnd):
+            let clampedEnd = min(rawEnd, now)
+            guard rawStart <= clampedEnd else {
+                throw ReportServiceError.invalidCustomRange
+            }
+
+            start = rawStart
+            end = clampedEnd
+        }
+
+        return ReportTimeRange(
+            start: start,
+            end: end,
+            dayCount: touchedDayCount(from: start, to: end)
+        )
+    }
+
+    func makeReport(
+        for selection: ReportRangeSelection,
+        sessions: [ActivitySession]
+    ) throws -> ReportSnapshot {
+        let now = dateProvider.now
+        let range = try resolveRange(for: selection)
+        var totalsByCategory: [ActivityCategory: TimeInterval] = [:]
+
+        for session in sessions {
+            let sessionEnd = session.effectiveEndDate(now: now)
+            let overlapStart = max(session.startAt, range.start)
+            let overlapEnd = min(sessionEnd, range.end)
+            guard overlapEnd > overlapStart else {
+                continue
+            }
+
+            var currentStart = overlapStart
+            while currentStart < overlapEnd {
+                let nextDayStart = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: currentStart)) ?? overlapEnd
+                let segmentEnd = min(overlapEnd, nextDayStart)
+                totalsByCategory[session.category, default: 0] += segmentEnd.timeIntervalSince(currentStart)
+                currentStart = segmentEnd
+            }
+        }
+
+        let totalTrackedDuration = totalsByCategory.values.reduce(0, +)
+        let categoryOrder = Dictionary(uniqueKeysWithValues: ActivityCategory.allCases.enumerated().map { ($1, $0) })
+        let summaries = ActivityCategory.allCases
+            .map { category in
+                let totalDuration = totalsByCategory[category] ?? 0
+                let averagePerDay = totalDuration / Double(max(range.dayCount, 1))
+                let percentage = totalTrackedDuration > 0 ? totalDuration / totalTrackedDuration : 0
+                return ReportCategorySummary(
+                    category: category,
+                    totalDuration: totalDuration,
+                    averagePerDay: averagePerDay,
+                    percentage: percentage
+                )
+            }
+            .sorted { left, right in
+                let leftHasTime = left.totalDuration > 0
+                let rightHasTime = right.totalDuration > 0
+                if leftHasTime != rightHasTime {
+                    return leftHasTime
+                }
+
+                if left.totalDuration != right.totalDuration {
+                    return left.totalDuration > right.totalDuration
+                }
+
+                return (categoryOrder[left.category] ?? 0) < (categoryOrder[right.category] ?? 0)
+            }
+
+        return ReportSnapshot(
+            range: range,
+            totalTrackedDuration: totalTrackedDuration,
+            summaries: summaries
+        )
+    }
+
+    private func touchedDayCount(from start: Date, to end: Date) -> Int {
+        let startDay = calendar.startOfDay(for: start)
+        let endDay = calendar.startOfDay(for: end)
+        let dayDifference = calendar.dateComponents([.day], from: startDay, to: endDay).day ?? 0
+        return max(dayDifference + 1, 1)
+    }
+}
+
 enum SessionServiceError: LocalizedError, Equatable {
     case activeSessionExists
     case cannotClearEndDate

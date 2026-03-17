@@ -6,7 +6,7 @@
 - [x] Pass 2: Session service + tests
 - [x] Pass 3: Home tab
 - [x] Pass 4: History tab + editing + manual backfill
-- [ ] Pass 5: Report service + report tests
+- [x] Pass 5: Report service + report tests
 - [ ] Pass 6: Reports UI + polish + README
 - [ ] Final verification
 
@@ -53,20 +53,20 @@
 
 #### Reports
 - [ ] Reports support Today, Week, Month, and Custom ranges
-- [ ] Week starts on Monday
+- [x] Week starts on Monday
 - [ ] Reports include a share chart and a total-time chart
 - [ ] Reports include a table with Activity, Avg/day, Total, and %
 - [ ] All 9 categories appear in the table
 - [ ] Zero-time categories sort to the bottom
-- [ ] Active sessions use now as temporary end time
-- [ ] Cross-midnight sessions are split correctly for totals and averages
-- [ ] Custom range rejects start > end
-- [ ] Future custom end values are clamped to now
+- [x] Active sessions use now as temporary end time
+- [x] Cross-midnight sessions are split correctly for totals and averages
+- [x] Custom range rejects start > end
+- [x] Future custom end values are clamped to now
 
 #### Data rules
 - [x] At most one session can be active at once
 - [ ] Gaps between sessions are allowed
-- [ ] Reports aggregate by top-level category only
+- [x] Reports aggregate by top-level category only
 - [ ] Storage is local-only and survives relaunch
 
 ### Notes
@@ -81,3 +81,6 @@
 - Pass 4 complete. Replaced the History placeholder with grouped day sections, split cross-midnight visible segments, edit and delete flows, and a manual backfill sheet that reuses the existing overlap rules.
 - Added deterministic tests for history timeline splitting and the end-date clearing rule used by the edit UI.
 - Attempted Pass 4 validation with the same `xcodebuild test ...` and `xcodebuild ... build` commands. The generic iOS build reached `HistoryView.swift` and other updated sources before failing again on SwiftData macro/plugin sandbox errors in this Codex environment, and the simulator test command remained blocked by CoreSimulator access.
+- Pass 5 complete. Added `ReportService` with Today, Week, Month, and Custom range resolution, Monday-start week semantics, future-end clamping, active-session handling, midnight splitting for aggregation, and sorted per-category totals/averages/percentages.
+- Added deterministic report tests covering range semantics, custom-range validation, clamping, cross-midnight totals, active-session handling, averages, percentages, and zero-time sorting.
+- Attempted Pass 5 validation with the same `xcodebuild test ...` and `xcodebuild ... build` commands. The generic iOS build compiled into the updated report service sources before failing again on the existing SwiftData macro/plugin sandbox issue in this Codex environment, and the simulator test command remained blocked by CoreSimulator access.

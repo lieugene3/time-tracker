@@ -9,6 +9,7 @@ final class SessionServiceTests: XCTestCase {
     private var context: ModelContext!
     private var dateProvider: TestDateProvider!
     private var service: SessionService!
+    private var reportService: ReportService!
 
     override func setUpWithError() throws {
         container = try ModelContainer(
@@ -19,9 +20,11 @@ final class SessionServiceTests: XCTestCase {
         context = ModelContext(container)
         dateProvider = TestDateProvider(now: Self.makeDate(hour: 9, minute: 0))
         service = SessionService(dateProvider: dateProvider)
+        reportService = ReportService(dateProvider: dateProvider, calendar: Self.testCalendar)
     }
 
     override func tearDownWithError() throws {
+        reportService = nil
         service = nil
         dateProvider = nil
         context = nil
@@ -249,6 +252,106 @@ final class SessionServiceTests: XCTestCase {
         XCTAssertEqual(sections[0].segments[0].endAt, now)
     }
 
+    func testReportServiceResolvesTodayWeekMonthAndCustomRanges() throws {
+        dateProvider.now = Self.makeDate(day: 18, hour: 14, minute: 30)
+
+        let todayRange = try reportService.resolveRange(for: .today)
+        XCTAssertEqual(todayRange.start, Self.makeDate(day: 18, hour: 0, minute: 0))
+        XCTAssertEqual(todayRange.end, dateProvider.now)
+        XCTAssertEqual(todayRange.dayCount, 1)
+
+        let weekRange = try reportService.resolveRange(for: .week)
+        XCTAssertEqual(weekRange.start, Self.makeDate(day: 16, hour: 0, minute: 0))
+        XCTAssertEqual(weekRange.end, dateProvider.now)
+        XCTAssertEqual(weekRange.dayCount, 3)
+
+        let monthRange = try reportService.resolveRange(for: .month)
+        XCTAssertEqual(monthRange.start, Self.makeDate(month: 3, day: 1, hour: 0, minute: 0))
+        XCTAssertEqual(monthRange.end, dateProvider.now)
+        XCTAssertEqual(monthRange.dayCount, 18)
+
+        let customRange = try reportService.resolveRange(
+            for: .custom(
+                start: Self.makeDate(day: 15, hour: 10, minute: 0),
+                end: Self.makeDate(day: 16, hour: 12, minute: 0)
+            )
+        )
+        XCTAssertEqual(customRange.start, Self.makeDate(day: 15, hour: 10, minute: 0))
+        XCTAssertEqual(customRange.end, Self.makeDate(day: 16, hour: 12, minute: 0))
+        XCTAssertEqual(customRange.dayCount, 2)
+    }
+
+    func testReportServiceClampsFutureCustomEndAndRejectsInvalidRange() throws {
+        dateProvider.now = Self.makeDate(day: 18, hour: 9, minute: 0)
+
+        let clampedRange = try reportService.resolveRange(
+            for: .custom(
+                start: Self.makeDate(day: 18, hour: 8, minute: 0),
+                end: Self.makeDate(day: 18, hour: 12, minute: 0)
+            )
+        )
+        XCTAssertEqual(clampedRange.end, dateProvider.now)
+
+        XCTAssertThrowsError(
+            try reportService.resolveRange(
+                for: .custom(
+                    start: Self.makeDate(day: 18, hour: 10, minute: 0),
+                    end: Self.makeDate(day: 18, hour: 12, minute: 0)
+                )
+            )
+        ) { error in
+            XCTAssertEqual(error as? ReportServiceError, .invalidCustomRange)
+        }
+    }
+
+    func testReportServiceAggregatesCrossMidnightTotalsAveragesAndPercentages() throws {
+        dateProvider.now = Self.makeDate(day: 18, hour: 9, minute: 0)
+
+        let sessions = [
+            ActivitySession(
+                category: .work,
+                startAt: Self.makeDate(day: 16, hour: 9, minute: 0),
+                endAt: Self.makeDate(day: 16, hour: 11, minute: 0)
+            ),
+            ActivitySession(
+                category: .work,
+                startAt: Self.makeDate(day: 17, hour: 23, minute: 0),
+                endAt: Self.makeDate(day: 18, hour: 2, minute: 0)
+            ),
+            ActivitySession(
+                category: .activeLearn,
+                startAt: Self.makeDate(day: 18, hour: 8, minute: 0)
+            )
+        ]
+
+        let report = try reportService.makeReport(
+            for: .custom(
+                start: Self.makeDate(day: 16, hour: 10, minute: 0),
+                end: Self.makeDate(day: 18, hour: 12, minute: 0)
+            ),
+            sessions: sessions
+        )
+
+        XCTAssertEqual(report.range.start, Self.makeDate(day: 16, hour: 10, minute: 0))
+        XCTAssertEqual(report.range.end, dateProvider.now)
+        XCTAssertEqual(report.range.dayCount, 3)
+        XCTAssertEqual(report.totalTrackedDuration, 18_000, accuracy: 0.001)
+        XCTAssertEqual(report.summaries.count, ActivityCategory.allCases.count)
+
+        let workSummary = try XCTUnwrap(report.summaries.first { $0.category == .work })
+        XCTAssertEqual(workSummary.totalDuration, 14_400, accuracy: 0.001)
+        XCTAssertEqual(workSummary.averagePerDay, 4_800, accuracy: 0.001)
+        XCTAssertEqual(workSummary.percentage, 0.8, accuracy: 0.0001)
+
+        let learnSummary = try XCTUnwrap(report.summaries.first { $0.category == .activeLearn })
+        XCTAssertEqual(learnSummary.totalDuration, 3_600, accuracy: 0.001)
+        XCTAssertEqual(learnSummary.averagePerDay, 1_200, accuracy: 0.001)
+        XCTAssertEqual(learnSummary.percentage, 0.2, accuracy: 0.0001)
+
+        XCTAssertEqual(report.summaries.prefix(2).map(\.category), [.work, .activeLearn])
+        XCTAssertTrue(report.summaries.dropFirst(2).allSatisfy { $0.totalDuration == 0 })
+    }
+
     private func fetchSessions() throws -> [ActivitySession] {
         try context.fetch(FetchDescriptor<ActivitySession>(sortBy: [SortDescriptor(\.startAt, order: .forward)]))
     }
@@ -263,12 +366,12 @@ final class SessionServiceTests: XCTestCase {
         return calendar
     }
 
-    private static func makeDate(day: Int = 17, hour: Int, minute: Int) -> Date {
+    private static func makeDate(month: Int = 3, day: Int = 17, hour: Int, minute: Int) -> Date {
         var components = DateComponents()
         components.calendar = testCalendar
         components.timeZone = testCalendar.timeZone
         components.year = 2026
-        components.month = 3
+        components.month = month
         components.day = day
         components.hour = hour
         components.minute = minute

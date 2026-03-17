@@ -7,7 +7,7 @@ struct ReportsView: View {
                 Text("Reports")
                     .font(.largeTitle.weight(.bold))
 
-                Text("Charts and detailed aggregation land in later passes after the session and report services are in place.")
+                Text("Charts and the report table land in the next pass. The report ranges and aggregation logic are now wired underneath this screen.")
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
