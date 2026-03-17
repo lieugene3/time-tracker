@@ -188,6 +188,67 @@ final class SessionServiceTests: XCTestCase {
         )
     }
 
+    func testCanClearEndDateOnlyForMostRecentSession() throws {
+        let firstSession = try service.createCompletedSession(
+            category: .work,
+            startAt: Self.makeDate(hour: 8, minute: 0),
+            endAt: Self.makeDate(hour: 9, minute: 0),
+            in: context
+        )
+        let secondSession = try service.createCompletedSession(
+            category: .exercise,
+            startAt: Self.makeDate(hour: 9, minute: 15),
+            endAt: Self.makeDate(hour: 10, minute: 0),
+            in: context
+        )
+
+        XCTAssertFalse(try service.canClearEndDate(for: firstSession, in: context))
+        XCTAssertTrue(try service.canClearEndDate(for: secondSession, in: context))
+    }
+
+    func testHistoryTimelineSplitsCrossMidnightSessionIntoDaySections() throws {
+        let session = try service.createCompletedSession(
+            category: .work,
+            startAt: Self.makeDate(day: 16, hour: 23, minute: 0),
+            endAt: Self.makeDate(day: 17, hour: 1, minute: 0),
+            in: context
+        )
+
+        let sections = HistoryTimelineBuilder(calendar: Self.testCalendar).makeSections(
+            from: [session],
+            now: Self.makeDate(day: 17, hour: 1, minute: 0)
+        )
+
+        XCTAssertEqual(sections.map(\.dayStart), [Self.startOfDay(day: 17), Self.startOfDay(day: 16)])
+        XCTAssertEqual(sections[0].segments.count, 1)
+        XCTAssertEqual(sections[1].segments.count, 1)
+
+        let newerDaySegment = sections[0].segments[0]
+        XCTAssertEqual(newerDaySegment.sourceSession.id, session.id)
+        XCTAssertEqual(newerDaySegment.startAt, Self.makeDate(day: 17, hour: 0, minute: 0))
+        XCTAssertEqual(newerDaySegment.endAt, Self.makeDate(day: 17, hour: 1, minute: 0))
+
+        let olderDaySegment = sections[1].segments[0]
+        XCTAssertEqual(olderDaySegment.sourceSession.id, session.id)
+        XCTAssertEqual(olderDaySegment.startAt, Self.makeDate(day: 16, hour: 23, minute: 0))
+        XCTAssertEqual(olderDaySegment.endAt, Self.makeDate(day: 17, hour: 0, minute: 0))
+    }
+
+    func testHistoryTimelineUsesNowForActiveSessionSegmentEnd() throws {
+        let activeSession = try service.startSession(category: .sleep, in: context)
+        let now = Self.makeDate(hour: 11, minute: 30)
+
+        let sections = HistoryTimelineBuilder(calendar: Self.testCalendar).makeSections(
+            from: [activeSession],
+            now: now
+        )
+
+        XCTAssertEqual(sections.count, 1)
+        XCTAssertEqual(sections[0].segments.count, 1)
+        XCTAssertTrue(sections[0].segments[0].showsNowAsEnd)
+        XCTAssertEqual(sections[0].segments[0].endAt, now)
+    }
+
     private func fetchSessions() throws -> [ActivitySession] {
         try context.fetch(FetchDescriptor<ActivitySession>(sortBy: [SortDescriptor(\.startAt, order: .forward)]))
     }
@@ -196,16 +257,26 @@ final class SessionServiceTests: XCTestCase {
         try context.fetch(FetchDescriptor<SavedSubActivity>())
     }
 
-    private static func makeDate(hour: Int, minute: Int) -> Date {
+    private static var testCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Toronto")!
+        return calendar
+    }
+
+    private static func makeDate(day: Int = 17, hour: Int, minute: Int) -> Date {
         var components = DateComponents()
-        components.calendar = Calendar(identifier: .gregorian)
-        components.timeZone = TimeZone(identifier: "America/Toronto")
+        components.calendar = testCalendar
+        components.timeZone = testCalendar.timeZone
         components.year = 2026
         components.month = 3
-        components.day = 17
+        components.day = day
         components.hour = hour
         components.minute = minute
         return components.date!
+    }
+
+    private static func startOfDay(day: Int) -> Date {
+        testCalendar.startOfDay(for: makeDate(day: day, hour: 12, minute: 0))
     }
 }
 

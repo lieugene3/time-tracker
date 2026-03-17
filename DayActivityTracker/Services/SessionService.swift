@@ -1,6 +1,85 @@
 import Foundation
 import SwiftData
 
+struct HistoryDaySection: Identifiable {
+    let dayStart: Date
+    let segments: [HistorySessionSegment]
+
+    var id: Date { dayStart }
+}
+
+struct HistorySessionSegment: Identifiable {
+    let sourceSession: ActivitySession
+    let dayStart: Date
+    let startAt: Date
+    let endAt: Date
+    let showsNowAsEnd: Bool
+
+    var id: String {
+        "\(sourceSession.id.uuidString)-\(dayStart.timeIntervalSinceReferenceDate)"
+    }
+
+    var duration: TimeInterval {
+        endAt.timeIntervalSince(startAt)
+    }
+}
+
+struct HistoryTimelineBuilder {
+    let calendar: Calendar
+
+    init(calendar: Calendar = .dayActivityTracker) {
+        self.calendar = calendar
+    }
+
+    func makeSections(from sessions: [ActivitySession], now: Date) -> [HistoryDaySection] {
+        var groupedSegments: [Date: [HistorySessionSegment]] = [:]
+
+        for session in sessions {
+            let effectiveEndAt = session.effectiveEndDate(now: now)
+            guard effectiveEndAt > session.startAt else {
+                continue
+            }
+
+            var currentDayStart = calendar.startOfDay(for: session.startAt)
+            while currentDayStart < effectiveEndAt {
+                guard let nextDayStart = calendar.date(byAdding: .day, value: 1, to: currentDayStart) else {
+                    break
+                }
+
+                let segmentStart = max(session.startAt, currentDayStart)
+                let segmentEnd = min(effectiveEndAt, nextDayStart)
+                if segmentEnd > segmentStart {
+                    let segment = HistorySessionSegment(
+                        sourceSession: session,
+                        dayStart: currentDayStart,
+                        startAt: segmentStart,
+                        endAt: segmentEnd,
+                        showsNowAsEnd: session.isActive && segmentEnd == effectiveEndAt
+                    )
+                    groupedSegments[currentDayStart, default: []].append(segment)
+                }
+
+                currentDayStart = nextDayStart
+            }
+        }
+
+        return groupedSegments
+            .map { dayStart, segments in
+                HistoryDaySection(
+                    dayStart: dayStart,
+                    segments: segments.sorted {
+                        if $0.startAt == $1.startAt {
+                            return $0.endAt > $1.endAt
+                        }
+
+                        return $0.startAt > $1.startAt
+                    }
+                )
+            }
+            .sorted { $0.dayStart > $1.dayStart }
+    }
+}
+
 enum SessionServiceError: LocalizedError, Equatable {
     case activeSessionExists
     case cannotClearEndDate
@@ -203,6 +282,17 @@ final class SessionService {
     func deleteSession(_ session: ActivitySession, in context: ModelContext) throws {
         context.delete(session)
         try context.save()
+    }
+
+    func canClearEndDate(for session: ActivitySession, in context: ModelContext) throws -> Bool {
+        guard try isMostRecentSession(session, in: context) else {
+            return false
+        }
+
+        let hasOtherActiveSession = try allSessions(in: context).contains {
+            $0.id != session.id && $0.isActive
+        }
+        return hasOtherActiveSession == false
     }
 
     func savedSubActivities(

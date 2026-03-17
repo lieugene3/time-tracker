@@ -5,7 +5,7 @@
 - [x] Pass 1: Project scaffold + models + persistence
 - [x] Pass 2: Session service + tests
 - [x] Pass 3: Home tab
-- [ ] Pass 4: History tab + editing + manual backfill
+- [x] Pass 4: History tab + editing + manual backfill
 - [ ] Pass 5: Report service + report tests
 - [ ] Pass 6: Reports UI + polish + README
 - [ ] Final verification
@@ -42,14 +42,14 @@
 - [x] Reused sub-activities update `lastUsedAt`
 
 #### History
-- [ ] History is grouped by day, newest day first
-- [ ] Sessions within a day are newest first
-- [ ] Tapping a history row opens editing
-- [ ] User can delete a session
-- [ ] User can manually backfill a past session
-- [ ] Overlapping edits are blocked with a clear message
-- [ ] Overlapping backfilled sessions are blocked with a clear message
-- [ ] Cross-midnight sessions appear under both affected days as split day segments
+- [x] History is grouped by day, newest day first
+- [x] Sessions within a day are newest first
+- [x] Tapping a history row opens editing
+- [x] User can delete a session
+- [x] User can manually backfill a past session
+- [x] Overlapping edits are blocked with a clear message
+- [x] Overlapping backfilled sessions are blocked with a clear message
+- [x] Cross-midnight sessions appear under both affected days as split day segments
 
 #### Reports
 - [ ] Reports support Today, Week, Month, and Custom ranges
@@ -78,3 +78,6 @@
 - Pass 3 complete. Implemented the Home tab current activity card, stop action, one-tap category switching, learn-category sub-activity picker sheet, and category-specific saved sub-activity reuse.
 - Attempted Pass 3 validation with `xcodebuild test -scheme DayActivityTracker -project DayActivityTracker.xcodeproj -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.0.1' -derivedDataPath /Users/eugene/Projects/time_tracker/.deriveddata CODE_SIGNING_ALLOWED=NO` and `xcodebuild -scheme DayActivityTracker -project DayActivityTracker.xcodeproj -destination 'generic/platform=iOS' -derivedDataPath /Users/eugene/Projects/time_tracker/.deriveddata CODE_SIGNING_ALLOWED=NO build`.
 - Pass 3 validation is currently blocked in this Codex run by Xcode macro/plugin sandbox failures (`sandbox-exec: sandbox_apply: Operation not permitted` and malformed `swift-plugin-server` responses), so the latest Home changes were reviewed manually after the build/test attempts.
+- Pass 4 complete. Replaced the History placeholder with grouped day sections, split cross-midnight visible segments, edit and delete flows, and a manual backfill sheet that reuses the existing overlap rules.
+- Added deterministic tests for history timeline splitting and the end-date clearing rule used by the edit UI.
+- Attempted Pass 4 validation with the same `xcodebuild test ...` and `xcodebuild ... build` commands. The generic iOS build reached `HistoryView.swift` and other updated sources before failing again on SwiftData macro/plugin sandbox errors in this Codex environment, and the simulator test command remained blocked by CoreSimulator access.
