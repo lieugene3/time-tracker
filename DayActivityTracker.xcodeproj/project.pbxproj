@@ -17,8 +17,10 @@
 		A00000000000000000000207 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* HomeView.swift */; };
 		A00000000000000000000208 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* HistoryView.swift */; };
 		A00000000000000000000209 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* ReportsView.swift */; };
-		A00000000000000000000211 /* DayActivityTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002B /* DayActivityTrackerTests.swift */; };
+		A00000000000000000000211 /* SessionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002B /* SessionServiceTests.swift */; };
 		A00000000000000000000212 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* XCTest.framework */; };
+		A00000000000000000000213 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002C /* DateProvider.swift */; };
+		A00000000000000000000214 /* SessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002D /* SessionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,7 +48,9 @@
 		A00000000000000000000028 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		A00000000000000000000029 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
 		A0000000000000000000002A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A0000000000000000000002B /* DayActivityTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayActivityTrackerTests.swift; sourceTree = "<group>"; };
+		A0000000000000000000002B /* SessionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionServiceTests.swift; sourceTree = "<group>"; };
+		A0000000000000000000002C /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
+		A0000000000000000000002D /* SessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,7 @@
 			children = (
 				A00000000000000000000050 /* App */,
 				A00000000000000000000051 /* Models */,
+				A00000000000000000000057 /* Services */,
 				A00000000000000000000052 /* Shared */,
 				A00000000000000000000053 /* Features */,
 				A0000000000000000000002A /* Assets.xcassets */,
@@ -110,7 +115,7 @@
 		A00000000000000000000006 /* DayActivityTrackerTests */ = {
 			isa = PBXGroup;
 			children = (
-				A0000000000000000000002B /* DayActivityTrackerTests.swift */,
+				A0000000000000000000002B /* SessionServiceTests.swift */,
 			);
 			path = DayActivityTrackerTests;
 			sourceTree = "<group>";
@@ -141,6 +146,15 @@
 				A00000000000000000000026 /* SampleData.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000057 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002C /* DateProvider.swift */,
+				A0000000000000000000002D /* SessionService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000053 /* Features */ = {
@@ -276,6 +290,8 @@
 				A00000000000000000000202 /* ActivityCategory.swift in Sources */,
 				A00000000000000000000203 /* ActivitySession.swift in Sources */,
 				A00000000000000000000204 /* SavedSubActivity.swift in Sources */,
+				A00000000000000000000213 /* DateProvider.swift in Sources */,
+				A00000000000000000000214 /* SessionService.swift in Sources */,
 				A00000000000000000000205 /* Formatters.swift in Sources */,
 				A00000000000000000000206 /* SampleData.swift in Sources */,
 				A00000000000000000000207 /* HomeView.swift in Sources */,
@@ -288,7 +304,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00000000000000000000211 /* DayActivityTrackerTests.swift in Sources */,
+				A00000000000000000000211 /* SessionServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,7 +326,6 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
 		};
@@ -321,7 +336,6 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Release;
 		};
@@ -331,6 +345,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				DEFINES_MODULE = YES;
+				ENABLE_TESTABILITY = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Day Activity Tracker";
@@ -359,6 +375,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				DEFINES_MODULE = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Day Activity Tracker";

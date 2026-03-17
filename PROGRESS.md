@@ -3,7 +3,7 @@
 ### Pass Status
 - [x] Pass 0: Read docs and plan
 - [x] Pass 1: Project scaffold + models + persistence
-- [ ] Pass 2: Session service + tests
+- [x] Pass 2: Session service + tests
 - [ ] Pass 3: Home tab
 - [ ] Pass 4: History tab + editing + manual backfill
 - [ ] Pass 5: Report service + report tests
@@ -16,7 +16,7 @@
 - [x] Xcode project exists and compiles
 - [x] No third-party dependencies
 - [ ] Uses SwiftUI, SwiftData, Swift Charts
-- [ ] Unit tests pass
+- [x] Unit tests pass
 - [ ] README exists and is accurate
 
 #### Tabs and navigation
@@ -64,7 +64,7 @@
 - [ ] Future custom end values are clamped to now
 
 #### Data rules
-- [ ] At most one session can be active at once
+- [x] At most one session can be active at once
 - [ ] Gaps between sessions are allowed
 - [ ] Reports aggregate by top-level category only
 - [ ] Storage is local-only and survives relaunch
@@ -73,3 +73,5 @@
 - Pass 0 complete. Planning documents are in place and implementation has not started yet.
 - Pass 1 complete. Added the Xcode project, app scaffold, SwiftData models, shared formatting helpers, preview sample data, and placeholder tab screens.
 - Validated Pass 1 with `xcodebuild -scheme DayActivityTracker -project DayActivityTracker.xcodeproj -destination 'generic/platform=iOS' -derivedDataPath /Users/eugene/Projects/time_tracker/.deriveddata CODE_SIGNING_ALLOWED=NO build`.
+- Pass 2 complete. Added `SessionService`, a date provider abstraction, overlap validation, active-session rules, and deterministic unit tests against an in-memory SwiftData container.
+- Validated Pass 2 with `xcodebuild test -scheme DayActivityTracker -project DayActivityTracker.xcodeproj -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.0.1' -derivedDataPath /Users/eugene/Projects/time_tracker/.deriveddata CODE_SIGNING_ALLOWED=NO` and a follow-up `xcodebuild ... build` on `generic/platform=iOS`.
