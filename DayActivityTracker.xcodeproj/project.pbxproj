@@ -1,0 +1,467 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000200 /* DayActivityTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* DayActivityTrackerApp.swift */; };
+		A00000000000000000000201 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* RootTabView.swift */; };
+		A00000000000000000000202 /* ActivityCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* ActivityCategory.swift */; };
+		A00000000000000000000203 /* ActivitySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* ActivitySession.swift */; };
+		A00000000000000000000204 /* SavedSubActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* SavedSubActivity.swift */; };
+		A00000000000000000000205 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* Formatters.swift */; };
+		A00000000000000000000206 /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* SampleData.swift */; };
+		A00000000000000000000207 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* HomeView.swift */; };
+		A00000000000000000000208 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* HistoryView.swift */; };
+		A00000000000000000000209 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* ReportsView.swift */; };
+		A00000000000000000000211 /* DayActivityTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002B /* DayActivityTrackerTests.swift */; };
+		A00000000000000000000212 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* XCTest.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A00000000000000000000140 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000130;
+			remoteInfo = DayActivityTracker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000010 /* DayActivityTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DayActivityTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000011 /* DayActivityTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DayActivityTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000012 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		A00000000000000000000020 /* DayActivityTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayActivityTrackerApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000021 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
+		A00000000000000000000022 /* ActivityCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCategory.swift; sourceTree = "<group>"; };
+		A00000000000000000000023 /* ActivitySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySession.swift; sourceTree = "<group>"; };
+		A00000000000000000000024 /* SavedSubActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSubActivity.swift; sourceTree = "<group>"; };
+		A00000000000000000000025 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		A00000000000000000000026 /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
+		A00000000000000000000027 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A00000000000000000000028 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		A00000000000000000000029 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
+		A0000000000000000000002A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A0000000000000000000002B /* DayActivityTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayActivityTrackerTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000121 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000124 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000212 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000005 /* DayActivityTracker */,
+				A00000000000000000000006 /* DayActivityTrackerTests */,
+				A00000000000000000000004 /* Frameworks */,
+				A00000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000010 /* DayActivityTracker.app */,
+				A00000000000000000000011 /* DayActivityTrackerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000012 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000005 /* DayActivityTracker */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000050 /* App */,
+				A00000000000000000000051 /* Models */,
+				A00000000000000000000052 /* Shared */,
+				A00000000000000000000053 /* Features */,
+				A0000000000000000000002A /* Assets.xcassets */,
+			);
+			path = DayActivityTracker;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000006 /* DayActivityTrackerTests */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000002B /* DayActivityTrackerTests.swift */,
+			);
+			path = DayActivityTrackerTests;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000050 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000020 /* DayActivityTrackerApp.swift */,
+				A00000000000000000000021 /* RootTabView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000051 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000022 /* ActivityCategory.swift */,
+				A00000000000000000000023 /* ActivitySession.swift */,
+				A00000000000000000000024 /* SavedSubActivity.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000052 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000025 /* Formatters.swift */,
+				A00000000000000000000026 /* SampleData.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000053 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000054 /* Home */,
+				A00000000000000000000055 /* History */,
+				A00000000000000000000056 /* Reports */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000054 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000027 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000055 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000028 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000056 /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000029 /* ReportsView.swift */,
+			);
+			path = Reports;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000130 /* DayActivityTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000162 /* Build configuration list for PBXNativeTarget "DayActivityTracker" */;
+			buildPhases = (
+				A00000000000000000000120 /* Sources */,
+				A00000000000000000000121 /* Frameworks */,
+				A00000000000000000000122 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DayActivityTracker;
+			packageProductDependencies = (
+			);
+			productName = DayActivityTracker;
+			productReference = A00000000000000000000010 /* DayActivityTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000131 /* DayActivityTrackerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000165 /* Build configuration list for PBXNativeTarget "DayActivityTrackerTests" */;
+			buildPhases = (
+				A00000000000000000000123 /* Sources */,
+				A00000000000000000000124 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A00000000000000000000141 /* PBXTargetDependency */,
+			);
+			name = DayActivityTrackerTests;
+			packageProductDependencies = (
+			);
+			productName = DayActivityTrackerTests;
+			productReference = A00000000000000000000011 /* DayActivityTrackerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					A00000000000000000000130 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					A00000000000000000000131 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = A00000000000000000000130;
+					};
+				};
+			};
+			buildConfigurationList = A00000000000000000000152 /* Build configuration list for PBXProject "DayActivityTracker" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A00000000000000000000002;
+			productRefGroup = A00000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000130 /* DayActivityTracker */,
+				A00000000000000000000131 /* DayActivityTrackerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000000000000000000122 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000120 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000200 /* DayActivityTrackerApp.swift in Sources */,
+				A00000000000000000000201 /* RootTabView.swift in Sources */,
+				A00000000000000000000202 /* ActivityCategory.swift in Sources */,
+				A00000000000000000000203 /* ActivitySession.swift in Sources */,
+				A00000000000000000000204 /* SavedSubActivity.swift in Sources */,
+				A00000000000000000000205 /* Formatters.swift in Sources */,
+				A00000000000000000000206 /* SampleData.swift in Sources */,
+				A00000000000000000000207 /* HomeView.swift in Sources */,
+				A00000000000000000000208 /* HistoryView.swift in Sources */,
+				A00000000000000000000209 /* ReportsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000123 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000211 /* DayActivityTrackerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A00000000000000000000141 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A00000000000000000000130 /* DayActivityTracker */;
+			targetProxy = A00000000000000000000140 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00000000000000000000150 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		A00000000000000000000151 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+		A00000000000000000000160 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Day Activity Tracker";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eugene.DayActivityTracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A00000000000000000000161 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Day Activity Tracker";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eugene.DayActivityTracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A00000000000000000000163 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eugene.DayActivityTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DayActivityTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DayActivityTracker";
+				TEST_TARGET_NAME = DayActivityTracker;
+			};
+			name = Debug;
+		};
+		A00000000000000000000164 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eugene.DayActivityTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DayActivityTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DayActivityTracker";
+				TEST_TARGET_NAME = DayActivityTracker;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000000000000000000152 /* Build configuration list for PBXProject "DayActivityTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000150 /* Debug */,
+				A00000000000000000000151 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000162 /* Build configuration list for PBXNativeTarget "DayActivityTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000160 /* Debug */,
+				A00000000000000000000161 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000165 /* Build configuration list for PBXNativeTarget "DayActivityTrackerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000163 /* Debug */,
+				A00000000000000000000164 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}

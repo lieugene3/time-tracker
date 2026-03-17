@@ -2,7 +2,7 @@
 
 ### Pass Status
 - [x] Pass 0: Read docs and plan
-- [ ] Pass 1: Project scaffold + models + persistence
+- [x] Pass 1: Project scaffold + models + persistence
 - [ ] Pass 2: Session service + tests
 - [ ] Pass 3: Home tab
 - [ ] Pass 4: History tab + editing + manual backfill
@@ -13,16 +13,16 @@
 ### Acceptance Checklist
 
 #### Build and project health
-- [ ] Xcode project exists and compiles
-- [ ] No third-party dependencies
+- [x] Xcode project exists and compiles
+- [x] No third-party dependencies
 - [ ] Uses SwiftUI, SwiftData, Swift Charts
 - [ ] Unit tests pass
 - [ ] README exists and is accurate
 
 #### Tabs and navigation
-- [ ] App has exactly 3 tabs: History, Home, Reports
-- [ ] Home is the default selected tab
-- [ ] Tab icons are appropriate SF Symbols
+- [x] App has exactly 3 tabs: History, Home, Reports
+- [x] Home is the default selected tab
+- [x] Tab icons are appropriate SF Symbols
 
 #### Home flow
 - [ ] User can start any non-learn activity with one tap
@@ -71,3 +71,5 @@
 
 ### Notes
 - Pass 0 complete. Planning documents are in place and implementation has not started yet.
+- Pass 1 complete. Added the Xcode project, app scaffold, SwiftData models, shared formatting helpers, preview sample data, and placeholder tab screens.
+- Validated Pass 1 with `xcodebuild -scheme DayActivityTracker -project DayActivityTracker.xcodeproj -destination 'generic/platform=iOS' -derivedDataPath /Users/eugene/Projects/time_tracker/.deriveddata CODE_SIGNING_ALLOWED=NO build`.
