@@ -17,11 +17,25 @@ enum DateFormatting {
         return formatter.string(from: date)
     }
 
+    static func mediumDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+
     static func shortDateTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+
+    static func weeklyRecapRange(start: Date, end: Date, calendar: Calendar = .dayActivityTracker) -> String {
+        let formatter = DateIntervalFormatter()
+        formatter.calendar = calendar
+        formatter.dateTemplate = "EEE, MMM d"
+        return formatter.string(from: start, to: end)
     }
 
     static func dayHeader(_ date: Date, calendar: Calendar = .dayActivityTracker) -> String {
@@ -57,6 +71,19 @@ enum DurationFormatting {
         }
 
         return "\(minutes)m"
+    }
+
+    static func hoursPerDay(_ interval: TimeInterval, dayCount: Int) -> String {
+        let normalizedDayCount = max(dayCount, 1)
+        let hoursPerDay = max(interval, 0) / 3600 / Double(normalizedDayCount)
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        formatter.minimumFractionDigits = 1
+
+        let value = formatter.string(from: NSNumber(value: hoursPerDay)) ?? "0.0"
+        return "\(value)h/day"
     }
 }
 

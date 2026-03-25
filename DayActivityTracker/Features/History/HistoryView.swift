@@ -32,7 +32,6 @@ struct HistoryView: View {
                 }
             }
         }
-        .navigationTitle("History")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -255,7 +254,7 @@ private struct HistoryEditorSheet: View {
     private var canKeepSessionActive: Bool {
         switch mode {
         case .create:
-            false
+            return false
         case .edit(let session):
             if session.isActive {
                 return true

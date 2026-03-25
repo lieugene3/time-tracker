@@ -1,6 +1,6 @@
 import Foundation
 
-enum ActivityCategory: String, CaseIterable, Codable, Hashable, Identifiable {
+enum ActivityCategory: String, CaseIterable, Codable, Hashable, Identifiable, Sendable {
     case activeLearn
     case passiveLearn
     case media
@@ -65,6 +65,29 @@ enum ActivityCategory: String, CaseIterable, Codable, Hashable, Identifiable {
             "bed.double.fill"
         case .personal:
             "heart.fill"
+        }
+    }
+
+    var widgetShortLabel: String {
+        switch self {
+        case .activeLearn:
+            "Active"
+        case .passiveLearn:
+            "Passive"
+        case .media:
+            "Media"
+        case .commuteTravel:
+            "Travel"
+        case .social:
+            "Social"
+        case .work:
+            "Work"
+        case .exercise:
+            "Move"
+        case .sleep:
+            "Sleep"
+        case .personal:
+            "Self"
         }
     }
 }

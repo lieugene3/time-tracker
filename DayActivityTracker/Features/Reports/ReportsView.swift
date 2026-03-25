@@ -3,20 +3,26 @@ import Foundation
 import Observation
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 struct ReportsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \ActivitySession.startAt, order: .reverse) private var sessions: [ActivitySession]
+    @AppStorage(
+        WeeklyRecapNotificationSettingsStore.isEnabledKey,
+        store: DayActivityTrackerSharedDefaults.userDefaults
+    ) private var isWeeklyRecapEnabled = false
     @State private var viewModel = ReportsViewModel()
+    @State private var weeklyRecapAuthorizationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var notificationErrorMessage: String?
 
     var body: some View {
         @Bindable var viewModel = viewModel
         let snapshot = viewModel.reportSnapshot(from: sessions)
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Reports")
-                    .font(.title.weight(.semibold))
-
+            VStack(alignment: .leading, spacing: 16) {
                 Picker("Report Range", selection: $viewModel.selectedPeriod) {
                     ForEach(ReportPeriod.allCases) { period in
                         Text(period.title)
@@ -29,19 +35,17 @@ struct ReportsView: View {
                     viewModel.handlePeriodSelection(period)
                 }
 
-                if viewModel.appliedPeriod == .custom {
-                    Button("Edit Custom Range") {
-                        viewModel.presentCustomRangeSheet()
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .accessibilityLabel("Edit custom range")
-                }
-
                 ReportOverviewCard(
-                    title: viewModel.appliedPeriod.summaryTitle,
                     dateRangeText: viewModel.dateRangeText(for: snapshot.range),
-                    totalTrackedText: DurationFormatting.abbreviated(snapshot.totalTrackedDuration),
-                    dayCount: snapshot.range.dayCount
+                    isEditable: viewModel.appliedPeriod == .custom,
+                    onTap: viewModel.presentCustomRangeSheet
+                )
+
+                WeeklyRecapPreferenceCard(
+                    isEnabled: isWeeklyRecapEnabled,
+                    authorizationStatus: weeklyRecapAuthorizationStatus,
+                    onEnable: enableWeeklyRecapNotifications,
+                    onDisable: disableWeeklyRecapNotifications
                 )
 
                 ReportCard(title: "Category Share") {
@@ -55,36 +59,14 @@ struct ReportsView: View {
                             .foregroundStyle(by: .value("Activity", summary.category.displayName))
                         }
                         .frame(height: 240)
-                        .chartLegend(position: .bottom, spacing: 12)
+                        .chartForegroundStyleScale(
+                            domain: ReportChartPalette.domain,
+                            range: ReportChartPalette.range
+                        )
+                        .chartLegend(.hidden)
                         .accessibilityLabel("Category share chart")
                     } else {
                         ReportEmptyState(message: "No tracked time falls inside the selected range.")
-                    }
-                }
-
-                ReportCard(title: "Total Time by Activity") {
-                    if snapshot.totalTrackedDuration > 0 {
-                        Chart(snapshot.summaries) { summary in
-                            BarMark(
-                                x: .value("Total", summary.totalDuration),
-                                y: .value("Activity", summary.category.displayName)
-                            )
-                            .foregroundStyle(by: .value("Activity", summary.category.displayName))
-                        }
-                        .frame(height: 340)
-                        .chartXAxis {
-                            AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                                AxisGridLine()
-                                AxisTick()
-                                if let seconds = value.as(Double.self) {
-                                    AxisValueLabel(DurationFormatting.abbreviated(seconds))
-                                }
-                            }
-                        }
-                        .chartLegend(.hidden)
-                        .accessibilityLabel("Total time by activity chart")
-                    } else {
-                        ReportEmptyState(message: "Add sessions to see total-time comparisons.")
                     }
                 }
 
@@ -92,56 +74,207 @@ struct ReportsView: View {
             }
             .padding()
         }
-        .navigationTitle("Reports")
         .sheet(isPresented: $viewModel.isShowingCustomRangeSheet) {
             CustomRangeSheet(viewModel: viewModel)
         }
+        .task {
+            await refreshWeeklyRecapStatus()
+            if isWeeklyRecapEnabled {
+                await WeeklyRecapNotificationCoordinator.syncImmediately(using: modelContext)
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else {
+                return
+            }
+
+            Task {
+                await refreshWeeklyRecapStatus()
+                if isWeeklyRecapEnabled {
+                    await WeeklyRecapNotificationCoordinator.syncImmediately(using: modelContext)
+                }
+            }
+        }
+        .alert("Unable to Configure Weekly Recap", isPresented: notificationErrorIsPresented) {
+            Button("OK", role: .cancel) {
+                notificationErrorMessage = nil
+            }
+        } message: {
+            Text(notificationErrorMessage ?? "Something went wrong.")
+        }
+    }
+
+    private var notificationErrorIsPresented: Binding<Bool> {
+        Binding(
+            get: { notificationErrorMessage != nil },
+            set: { isPresented in
+                if isPresented == false {
+                    notificationErrorMessage = nil
+                }
+            }
+        )
+    }
+
+    private func enableWeeklyRecapNotifications() {
+        Task {
+            do {
+                let isAuthorized = try await WeeklyRecapNotificationCoordinator.requestAuthorizationIfNeeded()
+                await refreshWeeklyRecapStatus()
+
+                guard isAuthorized else {
+                    isWeeklyRecapEnabled = false
+                    notificationErrorMessage = "Allow notifications for Day Activity Tracker in Settings to receive the weekly recap."
+                    return
+                }
+
+                isWeeklyRecapEnabled = true
+                await WeeklyRecapNotificationCoordinator.syncImmediately(using: modelContext)
+            } catch {
+                isWeeklyRecapEnabled = false
+                notificationErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func disableWeeklyRecapNotifications() {
+        isWeeklyRecapEnabled = false
+        WeeklyRecapNotificationCoordinator.removePendingRequests()
+    }
+
+    private func refreshWeeklyRecapStatus() async {
+        weeklyRecapAuthorizationStatus = await WeeklyRecapNotificationCoordinator.authorizationStatus()
     }
 }
 
 private struct ReportOverviewCard: View {
-    let title: String
     let dateRangeText: String
-    let totalTrackedText: String
-    let dayCount: Int
+    let isEditable: Bool
+    let onTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.headline)
-
-            Text(dateRangeText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            HStack(spacing: 12) {
-                MetricBadge(title: "Tracked", value: totalTrackedText)
-                MetricBadge(title: "Days", value: "\(dayCount)")
+        Group {
+            if isEditable {
+                Button(action: onTap) {
+                    dateRangeLabel
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Edit custom range. \(dateRangeText)")
+            } else {
+                dateRangeLabel
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(dateRangeText)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title). \(dateRangeText). Total tracked \(totalTrackedText) across \(dayCount) day\(dayCount == 1 ? "" : "s").")
+    }
+
+    private var dateRangeLabel: some View {
+        Text(dateRangeText)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
 
-private struct MetricBadge: View {
-    let title: String
-    let value: String
+private struct WeeklyRecapPreferenceCard: View {
+    let isEnabled: Bool
+    let authorizationStatus: UNAuthorizationStatus
+    let onEnable: () -> Void
+    let onDisable: () -> Void
+
+    private let activityLabels = ["Learn", "Exercise", "Personal", "Media"]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.monospacedDigit().weight(.semibold))
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Weekly Recap")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+
+                    Text(descriptionText)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.white.opacity(0.82))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 12)
+
+                Text(statusLabel)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.white.opacity(0.16), in: Capsule())
+            }
+
+            HStack(spacing: 8) {
+                ForEach(activityLabels, id: \.self) { label in
+                    Text(label)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.92))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.white.opacity(0.12), in: Capsule())
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(action: buttonAction) {
+                Label(buttonTitle, systemImage: isEnabled ? "bell.slash.fill" : "bell.badge.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.white)
+            .foregroundStyle(Color(red: 0.08, green: 0.25, blue: 0.37))
+            .accessibilityLabel(buttonTitle)
+
+            if authorizationStatus == .denied {
+                Label("Notifications are currently disabled for this app in system settings.", systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.84))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(18)
+        .background(background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private var buttonTitle: String {
+        isEnabled ? "Turn Off Weekly Recap" : "Enable Weekly Recap"
+    }
+
+    private var statusLabel: String {
+        isEnabled ? "Mondays 8:00 AM" : "Optional"
+    }
+
+    private var descriptionText: String {
+        if isEnabled {
+            return "A polished Monday recap highlights last week's Learn, Exercise, Personal, and Media hours/day."
+        }
+
+        return "Get a polished weekly summary card at the start of each week with your core lifestyle averages."
+    }
+
+    private var background: some ShapeStyle {
+        LinearGradient(
+            colors: [
+                Color(red: 0.09, green: 0.18, blue: 0.31),
+                Color(red: 0.13, green: 0.36, blue: 0.53),
+                Color(red: 0.19, green: 0.55, blue: 0.66)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private func buttonAction() {
+        if isEnabled {
+            onDisable()
+        } else {
+            onEnable()
+        }
     }
 }
 
@@ -155,14 +288,14 @@ private struct ReportCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
             content
         }
-        .padding()
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
@@ -181,12 +314,44 @@ private struct ReportEmptyState: View {
     }
 }
 
+private enum ReportChartPalette {
+    static let domain = ActivityCategory.allCases.map(\.displayName)
+    static let range: [Color] = ActivityCategory.allCases.map { color(for: $0) }
+
+    static func color(for category: ActivityCategory) -> Color {
+        switch category {
+        case .activeLearn:
+            return .blue
+        case .passiveLearn:
+            return .teal
+        case .media:
+            return .indigo
+        case .commuteTravel:
+            return .orange
+        case .social:
+            return .pink
+        case .work:
+            return .green
+        case .exercise:
+            return .red
+        case .sleep:
+            return .cyan
+        case .personal:
+            return .brown
+        }
+    }
+}
+
 private struct ReportTableCard: View {
     let snapshot: ReportSnapshot
 
+    private let averageColumnWidth: CGFloat = 58
+    private let totalColumnWidth: CGFloat = 60
+    private let percentageColumnWidth: CGFloat = 34
+
     var body: some View {
         ReportCard(title: "Details") {
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
+            Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 8) {
                 GridRow {
                     Text("Activity")
                         .font(.caption.weight(.semibold))
@@ -194,15 +359,15 @@ private struct ReportTableCard: View {
                     Text("Avg/day")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(width: averageColumnWidth, alignment: .trailing)
                     Text("Total")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(width: totalColumnWidth, alignment: .trailing)
                     Text("%")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(width: percentageColumnWidth, alignment: .trailing)
                 }
 
                 Divider()
@@ -210,20 +375,28 @@ private struct ReportTableCard: View {
 
                 ForEach(snapshot.summaries) { summary in
                     GridRow {
-                        Label(summary.category.displayName, systemImage: summary.category.symbolName)
-                            .font(.subheadline)
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(ReportChartPalette.color(for: summary.category))
+                                .frame(width: 8, height: 8)
+
+                            Text(summary.category.displayName)
+                                .font(.subheadline)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
+                        }
 
                         Text(DurationFormatting.abbreviated(summary.averagePerDay))
-                            .font(.subheadline.monospacedDigit())
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .font(.footnote.monospacedDigit())
+                            .frame(width: averageColumnWidth, alignment: .trailing)
 
                         Text(DurationFormatting.abbreviated(summary.totalDuration))
-                            .font(.subheadline.monospacedDigit())
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .font(.footnote.monospacedDigit())
+                            .frame(width: totalColumnWidth, alignment: .trailing)
 
                         Text(PercentageFormatting.wholePercent(summary.percentage))
-                            .font(.subheadline.monospacedDigit())
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .font(.footnote.monospacedDigit())
+                            .frame(width: percentageColumnWidth, alignment: .trailing)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(
@@ -306,7 +479,7 @@ private struct CustomRangeSheet: View {
     }
 }
 
-private enum ReportPeriod: String, CaseIterable, Identifiable {
+enum ReportPeriod: String, CaseIterable, Identifiable {
     case today
     case week
     case month
@@ -427,7 +600,7 @@ final class ReportsViewModel {
     }
 
     func dateRangeText(for range: ReportTimeRange) -> String {
-        "\(DateFormatting.shortDateTime(range.start)) - \(DateFormatting.shortDateTime(range.end))"
+        "\(DateFormatting.mediumDate(range.start)) - \(DateFormatting.mediumDate(range.end))"
     }
 }
 

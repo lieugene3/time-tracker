@@ -6,7 +6,13 @@ struct DayActivityTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             RootTabView()
+                .task {
+                    DayActivityTrackerSharedStore.migrateLegacyStoreIfNeeded()
+                    await WeeklyRecapNotificationCoordinator.syncImmediately(
+                        using: DayActivityTrackerSharedStore.sharedModelContainer.mainContext
+                    )
+                }
         }
-        .modelContainer(for: [ActivitySession.self, SavedSubActivity.self])
+        .modelContainer(DayActivityTrackerSharedStore.sharedModelContainer)
     }
 }

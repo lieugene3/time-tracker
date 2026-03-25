@@ -302,6 +302,8 @@ final class SessionService {
 
         context.insert(session)
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(snapshot: WidgetSessionSnapshot(session: session))
+        WeeklyRecapNotificationCoordinator.sync(using: context)
         return session
     }
 
@@ -324,6 +326,8 @@ final class SessionService {
 
             if activeSession.category == category,
                comparableSubActivityName(for: normalizedActiveSubActivity) == comparableSubActivityName(for: normalizedRequestedSubActivity) {
+                DayActivityActivitySurfaceCoordinator.sync(snapshot: WidgetSessionSnapshot(session: activeSession))
+                WeeklyRecapNotificationCoordinator.sync(using: context)
                 return activeSession
             }
 
@@ -351,6 +355,8 @@ final class SessionService {
 
         context.insert(newSession)
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(snapshot: WidgetSessionSnapshot(session: newSession))
+        WeeklyRecapNotificationCoordinator.sync(using: context)
         return newSession
     }
 
@@ -364,6 +370,8 @@ final class SessionService {
         activeSession.endAt = now
         activeSession.updatedAt = now
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(snapshot: nil)
+        WeeklyRecapNotificationCoordinator.sync(using: context)
         return activeSession
     }
 
@@ -395,6 +403,8 @@ final class SessionService {
 
         context.insert(session)
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(using: context)
+        WeeklyRecapNotificationCoordinator.sync(using: context)
         return session
     }
 
@@ -429,12 +439,16 @@ final class SessionService {
         session.updatedAt = dateProvider.now
 
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(using: context)
+        WeeklyRecapNotificationCoordinator.sync(using: context)
         return session
     }
 
     func deleteSession(_ session: ActivitySession, in context: ModelContext) throws {
         context.delete(session)
         try context.save()
+        DayActivityActivitySurfaceCoordinator.sync(using: context)
+        WeeklyRecapNotificationCoordinator.sync(using: context)
     }
 
     func canClearEndDate(for session: ActivitySession, in context: ModelContext) throws -> Bool {

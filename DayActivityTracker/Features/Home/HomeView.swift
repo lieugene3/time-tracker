@@ -5,16 +5,22 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \ActivitySession.startAt, order: .reverse) private var sessions: [ActivitySession]
     @Query(sort: \SavedSubActivity.lastUsedAt, order: .reverse) private var savedSubActivities: [SavedSubActivity]
+    @AppStorage(
+        DayActivityLiveActivitySettingsStore.isEnabledKey,
+        store: DayActivityTrackerSharedDefaults.userDefaults
+    ) private var isLiveActivityEnabled = false
     @State private var viewModel = HomeViewModel()
+    @State private var areLiveActivitiesAuthorized = DayActivityLiveActivityBridge.areActivitiesAuthorized
 
     var body: some View {
         @Bindable var viewModel = viewModel
         let activeSession = viewModel.activeSession(from: sessions)
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 16) {
                 Text("Current Activity")
                     .font(.title2.weight(.semibold))
 
@@ -37,27 +43,31 @@ struct HomeView: View {
                     .accessibilityLabel("No current activity. Choose what you're doing now.")
                 }
 
+                LiveActivityPreferenceCard(
+                    isEnabled: $isLiveActivityEnabled,
+                    areActivitiesAuthorized: areLiveActivitiesAuthorized
+                )
+
                 Text("Start or Switch")
                     .font(.title3.weight(.semibold))
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3),
+                    spacing: 10
+                ) {
                     ForEach(ActivityCategory.allCases) { category in
                         Button {
                             viewModel.handleCategoryTap(category, in: modelContext)
                         } label: {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Image(systemName: category.symbolName)
-                                    .font(.title2)
+                            VStack(alignment: .center, spacing: 0) {
                                 Text(category.displayName)
-                                    .font(.headline)
-                                    .multilineTextAlignment(.leading)
-                                Text(category.supportsSubActivities ? "Choose or enter a sub-activity" : "Start immediately")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(.subheadline.weight(.semibold))
+                                    .multilineTextAlignment(.center)
                             }
-                            .frame(maxWidth: .infinity, minHeight: 132, alignment: .leading)
-                            .padding()
-                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .frame(maxWidth: .infinity, minHeight: 72)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Start \(category.displayName)")
@@ -66,7 +76,6 @@ struct HomeView: View {
             }
             .padding()
         }
-        .navigationTitle("Home")
         .sheet(item: $viewModel.pickerCategory) { category in
             ActivityPickerSheet(
                 category: category,
@@ -83,6 +92,20 @@ struct HomeView: View {
         } message: {
             Text(viewModel.errorMessage ?? "Something went wrong.")
         }
+        .task {
+            refreshLiveActivityAuthorization()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else {
+                return
+            }
+
+            refreshLiveActivityAuthorization()
+        }
+    }
+
+    private func refreshLiveActivityAuthorization() {
+        areLiveActivitiesAuthorized = DayActivityLiveActivityBridge.areActivitiesAuthorized
     }
 }
 
@@ -297,5 +320,47 @@ struct CurrentActivityCard: View {
             .padding()
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
+    }
+}
+
+struct LiveActivityPreferenceCard: View {
+    @Binding var isEnabled: Bool
+
+    let areActivitiesAuthorized: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: $isEnabled) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Lock Screen Live Activity")
+                        .font(.headline)
+
+                    Text(descriptionText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .tint(.accentColor)
+            .accessibilityLabel("Show lock screen live activity")
+
+            if areActivitiesAuthorized == false {
+                Label("Live Activities are disabled in system settings for this device or app.", systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Live Activities are disabled in system settings for this device or app.")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var descriptionText: String {
+        if isEnabled {
+            return "Keeps the quick-switch panel on the Lock Screen and updates it as your activity changes."
+        }
+
+        return "Turn this on to pin the widget-style quick switcher to the Lock Screen."
     }
 }
